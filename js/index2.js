@@ -69,8 +69,8 @@ function loadModels(){
   // }, 
   // () => {}, 
   // (error) => console.log(error))
-  modelLoader('../assets/models/Animations/pikaRunning.glb', new THREE.Vector3(0, 0, 0), 'pika')
-  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 5, 0), 'charmander');
+  modelLoader('../assets/models/Animations/pikaRunning.glb', new THREE.Vector3(0, 1000, 0), 'pika')
+  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(10, 1000, 10), 'charmander');
   // modelLoader('../assets/models/charmander/scene.gltf', new THREE.Vector3(-10, 0, -10));
   // modelLoader('../assets/models/squirtle/scene.gltf', new THREE.Vector3(5, 0, 5));
 }

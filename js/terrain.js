@@ -25,10 +25,10 @@ export function Terrain() {
     var geo = terrainScene.children[0].geometry;
     // Add randomly distributed foliage
     let decoScene = THREE.Terrain.ScatterMeshes(geo, {
-        mesh: new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 12, 6)),
+        mesh: new THREE.Mesh(new THREE.CylinderGeometry(2, 20, 102, 6)),
         w: xS,
         h: yS,
-        spread: 0.02,
+        spread: 0.2,
         randomness: Math.random,
     });
     terrainScene.add(decoScene);

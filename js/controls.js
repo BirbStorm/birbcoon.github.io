@@ -79,8 +79,8 @@ export function updateControls() {
         direction.x = Number( moveRight ) - Number( moveLeft );
         direction.normalize(); // this ensures consistent movements in all directions
 
-        if ( moveForward || moveBackward ) velocity.z -= -(direction.z * 400.0 * delta);
-        if ( moveLeft || moveRight ) velocity.x -= (direction.x * 400.0 * delta);
+        if ( moveForward || moveBackward ) velocity.z -= -(direction.z * 450.0 * delta);
+        if ( moveLeft || moveRight ) velocity.x -= (direction.x * 450.0 * delta);
 
 
         controls.moveRight(  (velocity.x * delta) );
@@ -93,7 +93,7 @@ export function updateControls() {
             velocity.y = 0;
             controls.getObject().position.y = 5;
         }
-        var relativeCameraOffset = new THREE.Vector3(0,5,-20);
+        var relativeCameraOffset = new THREE.Vector3(0,5,-10);
         var cameraOffset = relativeCameraOffset.applyMatrix4(pika.matrixWorld )
         controls.getObject().position.x = cameraOffset.x
         controls.getObject().position.y = cameraOffset.y
