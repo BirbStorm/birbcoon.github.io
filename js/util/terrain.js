@@ -1,7 +1,8 @@
 export function Terrain() {
 
     let xS = 63, yS = 63;
-    let mntTexture = new THREE.TextureLoader().load('../assets/textures/ground.jpg');
+
+    let mntTexture = new THREE.TextureLoader().load('../assets/textures/grass.jpg');
     mntTexture.wrapS = mntTexture.wrapT = THREE.RepeatWrapping;
     mntTexture.repeat.set(16,16);
     let terrainScene = THREE.Terrain({
@@ -14,9 +15,9 @@ export function Terrain() {
         steps: 1,
         useBufferGeometry: false,
         xSegments: xS,
-        xSize: 8192,
+        xSize: 4096,
         ySegments: yS,
-        ySize: 8192,
+        ySize: 4096,
     });
     // Assuming you already have your global scene, add the terrain to it
 
@@ -25,10 +26,10 @@ export function Terrain() {
     var geo = terrainScene.children[0].geometry;
     // Add randomly distributed foliage
     let decoScene = THREE.Terrain.ScatterMeshes(geo, {
-        mesh: new THREE.Mesh(new THREE.CylinderGeometry(2, 20, 102, 6)),
+        mesh: new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 12, 6)),
         w: xS,
         h: yS,
-        spread: 0.2,
+        spread: 0.02,
         randomness: Math.random,
     });
     terrainScene.add(decoScene);
