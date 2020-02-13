@@ -1,5 +1,5 @@
+import { pika, isMouseDown } from '../index2.js'
 
-import { player, isMouseDown } from '../index2.js'
 const container = document.body;
 const menu = document.querySelector('#menu');
 const blocker = document.querySelector('#blocker')
@@ -11,8 +11,6 @@ let moveBackward = false
 let moveRight = false
 let rotateLeft = false
 let rotateRight = false
-let sprint = false
-let crouch = false
 let oldX = 0
 
 let prevTime = performance.now();
@@ -61,12 +59,6 @@ export const onKeyDown = ( event ) => {
         case 68: //d
             moveRight = true
             break
-        case 16: //shift
-            sprint = true
-            break
-        case 17: //control
-            crouch = true
-            break
     }
 };
 export const onMouseMove = (event) => {
@@ -110,12 +102,6 @@ export const onKeyUp = ( event ) => {
         case 68: //d
             moveRight = false
             break
-        case 16: //shift
-            sprint = false
-            break
-        case 17: //control
-            crouch = false
-            break
     }
 }
 
@@ -133,68 +119,37 @@ export function updateControls() {
         direction.x = Number( moveRight ) - Number( moveLeft );
         direction.normalize(); // this ensures consistent movements in all directions
 
-        //If both sprint and crouch are pressed, crouch will not be activated
-        if (sprint && crouch){
-            crouch = false;
-        }
+        if ( moveForward || moveBackward ) velocity.z -= (direction.z * 400.0 * delta);
+        if ( moveLeft || moveRight ) velocity.x -= -(direction.x * 400.0 * delta);
+        if ( rotateLeft )  pika.rotateOnAxis(new THREE.Vector3(0,1,0), rotateAngle);
+        if ( rotateRight )  pika.rotateOnAxis(new THREE.Vector3(0,1,0), -rotateAngle);
 
-        if ( moveForward ){
-            if ( sprint ){
-                velocity.z -= (direction.z * 400.0 * delta) * 2;
-            }
-            else if (crouch){
-                velocity.z -= (direction.z * 400.0 * delta) * 0.5;
-            }
-            else{
-                velocity.z -= (direction.z * 400.0 * delta);
-            }
-        }
-        if ( moveBackward ){
-            if(crouch){
-                velocity.z -= (direction.z * 400.0 * delta) * 0.5;
-            }
-            else{
-                velocity.z -= (direction.z * 400.0 * delta);
-            }
-        } 
-        if ( moveLeft || moveRight ){
-            if (crouch){
-                velocity.x -= -(direction.x * 400.0 * delta) * 0.5;
-            }
-            else{
-                velocity.x -= -(direction.x * 400.0 * delta);
-            }
-        }
-        if ( rotateLeft )  player.rotateOnAxis(new THREE.Vector3(0,1,0), rotateAngle);
-        if ( rotateRight )  player.rotateOnAxis(new THREE.Vector3(0,1,0), -rotateAngle);
 
         
         pika.translateZ(- velocity.z * delta)
         pika.translateX(- velocity.x * delta)
         // controls.getObject().position.y += ( velocity.y * delta ); // new behavior
-
         if ( controls.getObject().position.y < 5 ) {
             velocity.y = 0;
             controls.getObject().position.y = 5;
         }
-        //Lowers the camera for crouching
-        if (crouch){
-            var relativeCameraOffset = new THREE.Vector3(0,4,-20);
-        }
-        else{
-            var relativeCameraOffset = new THREE.Vector3(0,5,-20);
-        }
-        var cameraOffset = relativeCameraOffset.applyMatrix4(player.matrixWorld )
+        var relativeCameraOffset = new THREE.Vector3(0,5,-20);
+        var cameraOffset = relativeCameraOffset.applyMatrix4(pika.matrixWorld )
         controls.getObject().position.x = cameraOffset.x
         controls.getObject().position.y = cameraOffset.y
         controls.getObject().position.z = cameraOffset.z
 
+
+
+        controls.getObject().lookAt(pika.position)
+
+        prevTime = time;
     }
 
-    else if(player !== undefined){
+    else if(pika !== undefined){
         velocity = new THREE.Vector3(0,0,0)
-        player.translateZ(  velocity.z );
-        player.translateX(  velocity.x );
+        pika.translateZ(  velocity.z );
+        pika.translateX(  velocity.x );
 
     }
 

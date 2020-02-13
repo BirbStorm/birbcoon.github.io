@@ -3,18 +3,13 @@ import { Terrain } from './util/terrain.js'
 import * as controlsHelper from './util/controls.js'
 
 import { modelLoader } from './util/modelLoader.js'
-import { makeTextSprite } from './util/sprites.js'
 
 
 export let scene;
 export let isMouseDown;
-export let player;
+export let pika;
 export let terrain;
-let width;
-let height;
 let camera;
-let cameraHUD;
-let sceneHUD;
 let controls;
 let renderer;
 let keyboard = new THREEx.KeyboardState();
@@ -30,24 +25,11 @@ function main() {
   container = document.body;
   scene = new THREE.Scene();
 
-  // Create also a custom scene for HUD.
-  sceneHUD = new THREE.Scene();
-
-  // Create shortcuts for window size.
-  var width = window.innerWidth;
-  var height = window.innerHeight;
-
 
   loadModels();
   createRenderer();
 
   camera = createCamera();
-
-  // Create the camera and set the viewport to match the screen dimensions.
-  var cameraHUD = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 0.1, 100000 );
-  cameraHUD.position.z = 10;
-
-
   // scene.add(camera)
   console.log(renderer)
   controls = controlsHelper.createControls(camera, renderer);
@@ -57,9 +39,6 @@ function main() {
   createLights();
   createFloor();
   createSkyBox();
-  createHUD();
-  //createHealthBar();
-  createSprites();
 
   var axesHelper = new THREE.AxesHelper( 1 );
   scene.add( axesHelper );
@@ -74,8 +53,8 @@ function main() {
 }
 
 function loadModels(){
-  modelLoader('../assets/models/knuckles/knuckles.glb', new THREE.Vector3(0, 0, 0), 'knuckles')
-  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 5, 0), 'charmander');
+  modelLoader('../assets/models/Animations/pikaRunning.glb', new THREE.Vector3(0, 1000, 0), 'pika')
+  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 750, 0), 'charmander');
 }
 
 
@@ -98,13 +77,11 @@ function createLights() {
 function createFloor(){
   // creates a basic floor for testing purposes
   let flowMap = new THREE.TextureLoader().load('assets/textures/water/Water_1_M_Flow.jpg')
-  let waterGeometry = new THREE.PlaneBufferGeometry( 8196, 8196);
+  let waterGeometry = new THREE.PlaneBufferGeometry( 4096, 4096);
   let water = new THREE.Water( waterGeometry, {
       scale: 2,
       textureWidth: 4096,
-      textureHeight: 4096,
-      flowMap: flowMap
-
+      textureHeight: 4096
   } );
   water.position.y = -1;
   water.rotation.x = Math.PI * - 0.5;
@@ -166,53 +143,6 @@ function createRenderer() {
   document.body.appendChild( renderer.domElement );
 }
 
-function createSprites(){
-  var spritey = makeTextSprite( " World! ", 
-  { fontsize: 10, fontface: "Georgia", borderColor: {r:0, g:0, b:255, a:1.0} } );
-  spritey.position.set(-30,-10,0);
-  scene.add( spritey );
-}
-
-
-function createHUD(){
-
-
-  // We will use 2D canvas element to render our HUD.  
-  var hudCanvas = document.createElement('canvas');
-
-  // Again, set dimensions to fit the screen.
-  hudCanvas.width = width;
-  hudCanvas.height = height;
-
-  // Get 2D context and draw something supercool.
-  var hudBitmap = hudCanvas.getContext('2d');
-	hudBitmap.font = "Normal 40px Arial";
-  hudBitmap.textAlign = 'center';
-  hudBitmap.fillStyle = "rgba(245,245,245,0.75)";
-  hudBitmap.fillText('Initializing...', width / 2, height / 2);
-
-
-  
- 
- 
-	// Create texture from rendered graphics.
-	var hudTexture = new THREE.Texture(hudCanvas) 
-  hudTexture.needsUpdate = true;
-  
-  // Create HUD material.
-  var material = new THREE.MeshBasicMaterial( {map: hudTexture} );
-  material.transparent = true;
-
-  // Create plane to render the HUD. This plane fill the whole screen.
-  var planeGeometry = new THREE.PlaneGeometry( width, height );
-  var plane = new THREE.Mesh( planeGeometry, material );
-  sceneHUD.add( plane );
-}
-
-function createHealthBar(){
-  
-}
-
 function update() {
   const delta = clock.getDelta();
 
@@ -225,12 +155,9 @@ function update() {
 
 function animate() {
   requestAnimationFrame(animate)
-  player = scene.getObjectByName("knuckles")
+  pika = scene.getObjectByName("pika")
   controlsHelper.updateControls()
-  //renderer.clear();
   renderer.render( scene, camera );
-  //renderer.clearDepth();
-  //renderer.render(sceneHUD, cameraHUD);
 }
 
 function onWindowResize() {
