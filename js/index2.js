@@ -53,8 +53,8 @@ function main() {
 }
 
 function loadModels(){
-  modelLoader('../assets/models/Animations/pikaRunning.glb', new THREE.Vector3(0, 0, 0), 'pika')
-  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 5, 0), 'charmander');
+  modelLoader('../assets/models/Animations/pikaRunning.glb', new THREE.Vector3(0, 1000, 0), 'pika')
+  modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 750, 0), 'charmander');
 }
 
 
@@ -77,13 +77,11 @@ function createLights() {
 function createFloor(){
   // creates a basic floor for testing purposes
   let flowMap = new THREE.TextureLoader().load('assets/textures/water/Water_1_M_Flow.jpg')
-  let waterGeometry = new THREE.PlaneBufferGeometry( 8196, 8196);
+  let waterGeometry = new THREE.PlaneBufferGeometry( 4096, 4096);
   let water = new THREE.Water( waterGeometry, {
       scale: 2,
       textureWidth: 4096,
-      textureHeight: 4096,
-      flowMap: flowMap
-
+      textureHeight: 4096
   } );
   water.position.y = -1;
   water.rotation.x = Math.PI * - 0.5;
