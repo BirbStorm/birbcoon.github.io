@@ -1,10 +1,10 @@
 import { createCamera } from './util/camera.js';
-import { Terrain } from './util/terrain.js'
+import { generateTerrain } from './util/terrain.js'
 import * as controlsHelper from './util/controls.js'
 
 import { modelLoader } from './util/modelLoader.js'
 import { makeTextSprite } from './util/sprites.js'
-import { initPhysics, updatePhysics } from './util/physics.js';
+import { initPhysics, updatePhysics, physicsWorld } from './util/physics.js';
 
 
 export let scene;
@@ -69,7 +69,7 @@ function main() {
   controls = controlsHelper.createControls(camera, renderer);
   scene.add(controls.getObject())
 
-  terrain = Terrain()
+  terrain = generateTerrain()
   scene.add(terrain)
   createLights();
   createFloor();
@@ -97,27 +97,33 @@ function main() {
   document.addEventListener("mousemove", controlsHelper.onMouseMove);
   document.addEventListener("mousedown", () => isMouseDown = true);
   document.addEventListener("mouseup", () => isMouseDown = false);
-  raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 10, 0 ), 0, 100 );
-  console.log("mixers"+mixers)
+  // debug()
+}
+// function debug() {
+//   let debugDrawer = new THREE.AmmoDebugDrawer(scene, physicsWorld);
+//   debugDrawer.enable();
+//   debugDrawer.setDebugMode(2);
+// }
+function loadModels(){
+  modelLoader('../assets/models/Robot.glb', new THREE.Vector3(0, -140, 0), 'player')
+  modelLoader('../assets/models/Trex.glb', new THREE.Vector3(50, -140, 0), 'trex')
+  modelLoader('../assets/models/alien.glb', new THREE.Vector3(25, -140, 0), 'alien')
+  modelLoader('../assets/models/slime.glb', new THREE.Vector3(10, -140, 0), 'slime')
+  modelLoader('../assets/models/Rat.glb', new THREE.Vector3(30, -140, 0), 'rat')
 }
 
-function loadModels(){
-  modelLoader('../assets/models/knuckles/knuckles.glb', new THREE.Vector3(-200, 0, 900), 'knuckles')
-  
-  //modelLoader('../assets/models/untitled.glb', new THREE.Vector3(0, 5, 0), 'charmander');
-}
 
 
 function createLights() {
     const color = 0xFFFFFF;
-    const intensity = 5;
+    const intensity = 1;
     const light = new THREE.AmbientLight(color, intensity);
     scene.add(light);
     // const ambientLight = new THREE.HemisphereLight( 0xddeeff, 0x0f0e0d, 5 );
 
-    const mainLight = new THREE.DirectionalLight( 0xffffff, 2 );
+    const mainLight = new THREE.DirectionalLight( 0xffffff, 1 );
     mainLight.position.set( 10, 20, 20 );
-    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 5)
+    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 1)
     hemiLight.position.set(10,10,-10)
     scene.add(   mainLight,hemiLight );
 
@@ -238,7 +244,7 @@ function createHUD(){
 }
 
 function createHealthBar(){
-  
+
 }
 
 function update() {
@@ -253,12 +259,11 @@ function update() {
 function animate() {
   requestAnimationFrame(animate)
   update()
-  player = scene.getObjectByName("knuckles")
-
+  player = scene.getObjectByName("player")
   controlsHelper.updateControls()
   stats.update()
   //renderer.clear();
-  //updatePhysics(clock.getDelta())
+  updatePhysics(clock.getDelta())
   renderer.render( scene, camera );
   //renderer.clearDepth();
   //renderer.render(sceneHUD, cameraHUD);
