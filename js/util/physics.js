@@ -1,14 +1,15 @@
-import { terrain, dynamicObjects } from '../index2.js'
-import { positions } from './terrain.js';
+import { terrain, dynamicObjects, scene, player} from '../index2.js'
+import { heightMap, max, min } from './terrain.js';
+import{playerExsists} from './modelLoader.js'
 
 // Heightfield parameters
 
-var terrainWidth = 512;
-var terrainDepth = 512;
+var terrainWidth = 1024;
+var terrainDepth = 1024;
 var terrainHalfWidth = terrainWidth / 2;
 var terrainHalfDepth = terrainDepth / 2;
-var terrainMaxHeight = 100;
-var terrainMinHeight = - 10;
+var terrainMaxHeight = 220;
+var terrainMinHeight = 0;
 
 // Physics variables
 var collisionConfiguration;
@@ -20,20 +21,29 @@ export var physicsWorld;
 var transformAux1;
 var heightData = null;
 var ammoHeightData = null;
-
-
+let debugDrawer
+let groundBody;
+export let groundExsists;
+groundExsists = false;
+function debug() {
+    debugDrawer = new THREE.AmmoDebugDrawer(scene, physicsWorld);
+    debugDrawer.enable();
+    debugDrawer.setDebugMode(2);
+  }
 export function initPhysics() {
-    heightData = positions
+    // heightData = THREE.Terrain.toArray1D(terrain.children[0].geometry.vertices)
+    // console.log(heightData)
+    heightData = heightMap
     // Physics configuration
-
     collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
     broadphase = new Ammo.btDbvtBroadphase();
     solver = new Ammo.btSequentialImpulseConstraintSolver();
     physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-    physicsWorld.setGravity( new Ammo.btVector3( 0, -10, 0 ) );
+    physicsWorld.setGravity( new Ammo.btVector3( 0, -100, 0 ) );
 
     // Create the terrain body
+    debug()
 
     var groundShape = createTerrainShape();
     var groundTransform = new Ammo.btTransform();
@@ -43,10 +53,10 @@ export function initPhysics() {
     var groundMass = 0;
     var groundLocalInertia = new Ammo.btVector3( 0, 0, 0 );
     var groundMotionState = new Ammo.btDefaultMotionState( groundTransform );
-    var groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
+    groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
     physicsWorld.addRigidBody( groundBody );
     transformAux1 = new Ammo.btTransform();
-
+    groundExsists = true;
 }
 
 
@@ -108,13 +118,22 @@ function createTerrainShape() {
     return heightFieldShape;
 
 }
+let die = null;
+die = function(){
+    document.getElementById("hbar").width = 0;
+    console.log("die");
+}
 
 export function updatePhysics( deltaTime ) {
 
     physicsWorld.stepSimulation( deltaTime, 10 );
-    
     // Update objects
+
+    //if(playerExsists && groundExsists) physicsWorld.contactPairTest(player.userData.physicsBody,groundBody,die);
+
+    //console.log(player.userData.physicsBody)
     for ( let i in dynamicObjects ) {
+        
         var objThree = dynamicObjects[ i ];
         var objPhys = objThree.userData.physicsBody;
         var ms = objPhys.getMotionState();
@@ -128,6 +147,7 @@ export function updatePhysics( deltaTime ) {
         }
 
     }
+    debugDrawer.update();
 
 }
 
