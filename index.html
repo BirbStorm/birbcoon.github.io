@@ -14,36 +14,98 @@
 
         <div id="loader"></div>
     
-    </section> 
+    </section>
+
+<div id="death"><p id="deathText">YOU DIED</p></div>
+
 <div id="blocker">
-    <img id="muteButton" src="/assets/textures/unmute.png" style="width:60px;height:60px;" onclick="javascript:toggleMute()" />
+    <div id="muteButtonDiv">
+        <img id="muteButton" src="/assets/textures/unmute.png" onclick="javascript:toggleMute()" />
+    </div>
         
         <div id="menu">
+            <div class="container">
             
-            <span>Click to play</span>
+            <span><h1 style="font-size: 500%;">The Hunt</h1></span>
             <br>
-                Move: WASD
             <br>
-                Jump: SPACE
+                <button class="menuButton" id="play" onclick="javascript:startGame()">Play</button> <br>
+                <button class="menuButton" id="list">Known Enemies</button><br>
+                <button class="menuButton" id="options">Options</button>
+                
             <br>
-                Look: Click + Mouse Move                
-            <br>
-            <audio id="music" autoplay loop >
+
+            <audio id="music" loop >
                 <source src="/assets/audio/POL-staff-roll-short.wav" type="audio/wav">
             </audio>
-        </div>      
+            <audio id="flying" autoplay loop >
+                <source src="/assets/audio/flying.mp3" type="audio/mpeg">
+            </audio>
+            <audio id="walking" loop >
+                <source src="/assets/audio/walking.mp3" type="audio/mpeg">
+            </audio>
+            <audio id="running" loop >
+                <source src="/assets/audio/walking.mp3" type="audio/mpeg">
+            </audio>
+            </div>
+        </div>
+
+        <div id="known" style="display: none;">
+            <div class="container">
+            
+            <span><h1 style="font-size: 500%;">Known Enemies</h1></span>
+            <br>
+            <br>
+            <table style="margin-left:auto;margin-right:auto;">
+                <tr>
+                    <td><img src="assets/textures/questionmark.jpg"width="35"height="35"></td>
+                    <td><img src="assets/textures/questionmark.jpg"width="35"height="35"></td>
+                    <td><img src="assets/textures/questionmark.jpg"width="35"height="35"></td>
+                    <td><img src="assets/textures/questionmark.jpg"width="35"height="35"></td>
+                </tr>
+                <tr>
+                    <td>Unknow</td>
+                    <td>Unknow</td>
+                    <td>Unknow</td>
+                    <td>Unknow</td>
+                </tr>
+            </table>
+                <button class="menuButton" id="knownBack">Back</button>
+            <br>
+            </div>
+        </div>
+        
+        <div id="optionsMenu" style="display: none;">
+            <div class="container">
+            
+            <span><h1 style="font-size: 500%;">Options</h1></span>
+            <br>
+            <br>
+                <button class="menuButton" id="optionsBack">Back</button>
+            <br>
+            </div>
+        </div> 
                        
 </div>
+
+<!--Shows current weapon and amount of ammo-->
+<div id="gear">
+    <img id="weapon" src="/assets/textures/fist.png"/>
+    <img id="ammo" src="/assets/textures/infinity.png"/>
+</div>
+
    <div id="hud">
+    <div id="timer"></div>
             <div>
                 <table>
                     <tr>
-                        <td style="color:white">Health</td>
+                        <td><p id="health">Health</p></td>
                         <td><div id="hpbar"></div></td>
                     </tr>
                 </table>
-            </div>>
+            </div>
         </div>  
+
 
 <script src='js/lib/3js.js'></script>
 <script src='js/lib/ammo.js'></script>
@@ -51,22 +113,28 @@
 <script src='js/lib/loaders/Reflector.js'></script>
 <script src='js/lib/loaders/Refractor.js'></script>
 <script src='js/lib/loaders/THREE.Terrain.min.js'></script>
-<script src='js/lib/loaders/yuka.min.js'></script>
 
-<script src='js/lib/loaders/ammodebugdrawer.js'></script>
 
 <script src='js/lib/stats.min.js'></script>
 <script src='js/util/audio.js'></script>
+<script src='js/util/hud.js'></script>
+<script src='js/util/physics.js'></script>
 
-<script src='js/lib/controls/THREEx.KeyboardState.js'></script>
-<script src='js/lib/controls/THREEx.FullScreen.js'></script>
 <script src='js/lib/controls/PointerLockControls.js'></script>
-<script src='js/lib/controls/FirstPersonControls.js'></script>
 
 <script src='js/lib/loaders/GLTFLoader.js'></script>
 
 <script type="module" src="js/index2.js"></script>
  
-
+<!-- <script type="text/javascript">
+    export function takeDamage(){
+        let str = document.getElementById("hbar").style.width;
+        str = str.substring(0,str.length-2);
+        let x = parseInt(str)-1;
+        str = x + "px";
+        document.getElementById("hbar").style.width = str;
+        console.log("die");
+    }
+</script> -->
 </body>
 </html>

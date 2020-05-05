@@ -1,9 +1,8 @@
 import { createCamera } from './util/camera.js';
-import { generateTerrain, Terrain } from './util/terrain.js'
+import { generateTerrain } from './util/terrain.js'
 import * as controlsHelper from './util/controls.js'
 
 import { modelLoader } from './util/modelLoader.js'
-import { makeTextSprite } from './util/sprites.js'
 import { initPhysics, updatePhysics, physicsWorld } from './util/physics.js';
 
 
@@ -11,23 +10,19 @@ export let scene;
 export let isMouseDown;
 export let player;
 export let terrain;
-let width;
-let height;
+
 let camera;
-let cameraHUD;
-let sceneHUD;
+let container;
 let controls;
 let renderer;
-let keyboard = new THREEx.KeyboardState();
-let container;
-let stats;
+
 export let dynamicObjects = []
 export let loadingManager;
 export const mixers = []
 const clock = new THREE.Clock();
 const blocker = document.querySelector('#blocker')
 const menu = document.getElementById( 'menu')
-let raycaster;
+
 
 function main() {
   loadingManager = new THREE.LoadingManager( () => {
@@ -41,21 +36,15 @@ function main() {
 } );
 
 
+  
   //sets container to the div within the HTML file
   container = document.body;
   scene = new THREE.Scene();
 
-  // Create also a custom scene for HUD.
-  sceneHUD = new THREE.Scene();
 
   // Create shortcuts for window size.
   var width = window.innerWidth;
   var height = window.innerHeight;
-
-  stats = new Stats();
-  // stats.domElement.style.position = 'absolute';
-  // stats.domElement.style.top = '0px';
-  // container.appendChild( stats.domElement );
 
   loadModels();
   createRenderer();
@@ -67,7 +56,6 @@ function main() {
   cameraHUD.position.z = 10;
 
 
-  // scene.add(camera)
   controls = controlsHelper.createControls(camera, renderer);
   scene.add(controls.getObject())
 
@@ -76,9 +64,7 @@ function main() {
   createLights();
   createFloor();
   createSkyBox();
-  //createHUD();
-  //createHealthBar();
-  //createSprites();
+
   initPhysics()
   var axesHelper = new THREE.AxesHelper( 1 );
   scene.add( axesHelper );
@@ -86,7 +72,7 @@ function main() {
 
   //normalize the direction vector (convert to vector of length 1)
   dir.normalize();
-  
+
   var origin = new THREE.Vector3( -200, 0, 900 );
   var length = 1;
   var hex = 0xffff00;
@@ -103,11 +89,11 @@ function main() {
 
 function loadModels(){
 
-  modelLoader('../assets/models/Robot.glb', new THREE.Vector3(0, 200, 0), 'player', 100)
-  modelLoader('../assets/models/Trex.glb', new THREE.Vector3(50, 200, 0), 'trex', 1)
-  modelLoader('../assets/models/alien.glb', new THREE.Vector3(25, 200, 0), 'alien', 1)
-  modelLoader('../assets/models/slime.glb', new THREE.Vector3(10, 200, 0), 'slime', 1)
-  modelLoader('../assets/models/Rat.glb', new THREE.Vector3(30, 200, 0), 'rat',1)
+  modelLoader('../assets/models/Robot.glb', new THREE.Vector3(0, 150, 0), 'player', 1,0)
+  modelLoader('../assets/models/Trex.glb', new THREE.Vector3(50, 200, 100), 'trex', 1,0)
+  modelLoader('../assets/models/alien.glb', new THREE.Vector3(25, 200, 100), 'player', 1,0)
+  modelLoader('../assets/models/slime.glb', new THREE.Vector3(10, 200, 100), 'slime', 1,0)
+  modelLoader('../assets/models/Rat.glb', new THREE.Vector3(30, 200, 100), 'rat',1,0)
 
 }
 
@@ -140,13 +126,13 @@ function createFloor(){
       flowMap: flowMap
 
   } );
-  water.position.y = -1;
+  water.position.y = 15;
   water.rotation.x = Math.PI * - 0.5;
           
   var helperGeometry = new THREE.PlaneBufferGeometry( 20, 20 );
   var helperMaterial = new THREE.MeshBasicMaterial( { map: flowMap } );
   var helper = new THREE.Mesh( helperGeometry, helperMaterial );
-  helper.position.y = 1.01;
+  helper.position.y = 15.01;
   helper.rotation.x = Math.PI * - 0.5;
   helper.visible = false;
 
@@ -184,7 +170,6 @@ function createSkyBox(){
     scene.add(skyBox, ambient);
 }
 
-
 function createRenderer() {
   // create a WebGLRenderer and set its width and height
   renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -199,52 +184,6 @@ function createRenderer() {
   document.body.appendChild( renderer.domElement );
 }
 
-function createSprites(){
-  var spritey = makeTextSprite( " World! ", 
-  { fontsize: 10, fontface: "Georgia", borderColor: {r:0, g:0, b:255, a:1.0} } );
-  spritey.position.set(-30,-10,0);
-  scene.add( spritey );
-}
-
-
-function createHUD(){
-
-
-  // We will use 2D canvas element to render our HUD.  
-  var hudCanvas = document.createElement('canvas');
-
-  // Again, set dimensions to fit the screen.
-  hudCanvas.width = width;
-  hudCanvas.height = height;
-
-  // Get 2D context and draw something supercool.
-  var hudBitmap = hudCanvas.getContext('2d');
-	hudBitmap.font = "Normal 40px Arial";
-  hudBitmap.textAlign = 'center';
-  hudBitmap.fillStyle = "rgba(245,245,245,0.75)";
-  hudBitmap.fillText('Initializing...', width / 2, height / 2);
-
-
-  
- 
- 
-	// Create texture from rendered graphics.
-	var hudTexture = new THREE.Texture(hudCanvas) 
-  hudTexture.needsUpdate = true;
-  
-  // Create HUD material.
-  var material = new THREE.MeshBasicMaterial( {map: hudTexture} );
-  material.transparent = true;
-
-  // Create plane to render the HUD. This plane fill the whole screen.
-  var planeGeometry = new THREE.PlaneGeometry( width, height );
-  var plane = new THREE.Mesh( planeGeometry, material );
-  sceneHUD.add( plane );
-}
-
-function createHealthBar(){
-
-}
 
 function update() {
   const delta = clock.getDelta();
@@ -260,12 +199,9 @@ function animate() {
   update()
   player = scene.getObjectByName("player")
   controlsHelper.updateControls()
-  stats.update()
-  //renderer.clear();
   updatePhysics(clock.getDelta())
   renderer.render( scene, camera );
-  //renderer.clearDepth();
-  //renderer.render(sceneHUD, cameraHUD);
+
 }
 
 function onWindowResize() {

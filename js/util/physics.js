@@ -1,9 +1,15 @@
-import { terrain, dynamicObjects, scene, player} from '../index2.js'
-import { heightMap, max, min } from './terrain.js';
-import{playerExsists} from './modelLoader.js'
+import { dynamicObjects, player} from '../index2.js'
+import { heightMap } from './terrain.js';
+import{playerExsists} from './modelLoader.js';
+import {died, activateAllActions} from './controls.js';
+//import{takeDamage} from 'index.html';
 
 // Heightfield parameters
 
+let music = document.getElementById('music');
+let flying = document.getElementById('flying');
+let listener = new THREE.AudioListener();
+let sound = new THREE.Audio( listener );
 var terrainWidth = 1024;
 var terrainDepth = 1024;
 var terrainHalfWidth = terrainWidth / 2;
@@ -16,34 +22,54 @@ var collisionConfiguration;
 var dispatcher;
 var broadphase;
 var solver;
+let groundContact = null;
+export let playerLanded = false;
 export var physicsWorld;
 // var dynamicObjects = [];
 var transformAux1;
 var heightData = null;
 var ammoHeightData = null;
-let debugDrawer
 let groundBody;
+let test;
+let qt;
 export let groundExsists;
 groundExsists = false;
-function debug() {
-    debugDrawer = new THREE.AmmoDebugDrawer(scene, physicsWorld);
-    debugDrawer.enable();
-    debugDrawer.setDebugMode(2);
-  }
 export function initPhysics() {
-    // heightData = THREE.Terrain.toArray1D(terrain.children[0].geometry.vertices)
-    // console.log(heightData)
     heightData = heightMap
     // Physics configuration
+    groundContact = new Ammo.ConcreteContactResultCallback();
+    groundContact.addSingleResult = () =>{
+        // let bar = document.querySelector("#hpbar");
+        // bar.style.width = (bar.clientWidth -1) + 'px';
+        // if (bar.style.width == "0px"){
+        //     died();
+        // }
+        test = groundTransform.getRotation()
+        qt = THREE.Quaternion(test.x(),test.y(),test.z(),test.w())
+        //console.log(test.x(),test.y(),test.z(),test.w())
+    }
+        //Changes to normal gravity on contact with ground
+    groundContact.addSingleResult = function(){
+        physicsWorld.setGravity( new Ammo.btVector3( 0, -100, 0 ) );
+        if(!playerLanded){
+            playerLanded = true;
+            activateAllActions();
+            music.play();
+            getSoundAndFadeAudio('flying');
+            powerUpSound();
+        }
+    }
+    
     collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
     broadphase = new Ammo.btDbvtBroadphase();
     solver = new Ammo.btSequentialImpulseConstraintSolver();
     physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-    physicsWorld.setGravity( new Ammo.btVector3( 0, -100, 0 ) );
+    //Gravity used for dropping
+    physicsWorld.setGravity( new Ammo.btVector3( 0, -10000, 0 ) );
 
+    physicsWorld.debugDrawWorld();
     // Create the terrain body
-    debug()
 
     var groundShape = createTerrainShape();
     var groundTransform = new Ammo.btTransform();
@@ -54,7 +80,7 @@ export function initPhysics() {
     var groundLocalInertia = new Ammo.btVector3( 0, 0, 0 );
     var groundMotionState = new Ammo.btDefaultMotionState( groundTransform );
     groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
-    physicsWorld.addRigidBody( groundBody );
+    physicsWorld.addRigidBody( groundBody, 3, 1 );
     transformAux1 = new Ammo.btTransform();
     groundExsists = true;
 }
@@ -118,20 +144,15 @@ function createTerrainShape() {
     return heightFieldShape;
 
 }
-let die = null;
-die = function(){
-    document.getElementById("hbar").width = 0;
-    console.log("die");
-}
 
 export function updatePhysics( deltaTime ) {
 
     physicsWorld.stepSimulation( deltaTime, 10 );
     // Update objects
 
-    //if(playerExsists && groundExsists) physicsWorld.contactPairTest(player.userData.physicsBody,groundBody,die);
+    if(playerExsists && groundExsists) physicsWorld.contactPairTest(player.userData.physicsBody,groundBody,groundContact);
+    
 
-    //console.log(player.userData.physicsBody)
     for ( let i in dynamicObjects ) {
         
         var objThree = dynamicObjects[ i ];
@@ -140,14 +161,49 @@ export function updatePhysics( deltaTime ) {
         if ( ms ) {
             ms.getWorldTransform( transformAux1 );
             var p = transformAux1.getOrigin();
-            var q = transformAux1.getRotation();
+            var q = (transformAux1.getRotation());
+            // if(groundExsists)
+            //  console.log(groundTransform.getRotation())
             objThree.position.set( p.x(), p.y(), p.z() );
             objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
-
+            // console.log(objThree)
         }
 
     }
-    debugDrawer.update();
+
 
 }
 
+
+export function getSoundAndFadeAudio (audiosnippetId) {
+
+    var sound = document.getElementById(audiosnippetId);
+
+    // Set the point in playback that fadeout begins. This is for a 2 second fade out.
+    var fadePoint = sound.duration - sound.duration - 2; 
+
+    var fadeAudio = setInterval(function () {
+
+        // Only fade if past the fade out point or not at zero already
+        if ((sound.currentTime >= fadePoint) && (sound.volume != 0.0)) {
+            sound.volume = sound.volume - 0.1;
+        }
+        // When volume at zero stop all the intervalling
+        if (sound.volume <= 0.0001) {
+            clearInterval(fadeAudio);
+            sound.volume = 0.0;
+            sound.pause();
+        }
+    }, 200);
+
+}
+
+function powerUpSound(){
+    var audioLoader = new THREE.AudioLoader();
+    audioLoader.load( '../../assets/audio/powerUp.mp3', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop( false );
+        sound.setVolume( 0.8 );
+        sound.play();
+    });
+}
